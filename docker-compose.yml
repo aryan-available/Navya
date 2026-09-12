@@ -13,7 +13,22 @@ services:
     networks:
       - gridpilot-network
 
-  # 2. Node.js + Express API Gateway (Member B)
+  # 2. Python FastAPI Optimization Engine (Member C)
+  engine:
+    build:
+      context: ./engine
+      dockerfile: Dockerfile
+    container_name: gridpilot-engine
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - HOST=0.0.0.0
+    networks:
+      - gridpilot-network
+
+  # 3. Node.js + Express API Gateway (Member B)
   backend:
     build:
       context: ./backend
@@ -24,6 +39,7 @@ services:
       - "5000:5000"
     environment:
       - PORT=5000
+      - HOST=0.0.0.0
       - NODE_ENV=production
       - MONGODB_URI=mongodb://mongodb:27017/gridpilot
       - JWT_SECRET=super_secret_gridpilot_production_key_2026
@@ -33,6 +49,7 @@ services:
       - FRONTEND_ORIGIN=*
     depends_on:
       - mongodb
+      - engine
     networks:
       - gridpilot-network
 
@@ -42,3 +59,4 @@ networks:
 
 volumes:
   mongo_data:
+

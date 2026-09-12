@@ -103,13 +103,14 @@ export async function startServer(): Promise<http.Server> {
   }
 
   const port = env.PORT;
+  const host = env.HOST;
   return new Promise((resolve) => {
-    server.listen(port, () => {
+    server.listen(port, host, () => {
       logger.info(`=======================================================`);
       logger.info(`  GRIDPILOT BACKEND (MEMBER B) READY`);
-      logger.info(`  REST API listening on: http://localhost:${port}`);
-      logger.info(`  WebSocket ready on:   ws://localhost:${port}`);
-      logger.info(`  Public Signal:        http://localhost:${port}/signal`);
+      logger.info(`  REST API listening on: http://${host}:${port}`);
+      logger.info(`  WebSocket ready on:   ws://${host}:${port}`);
+      logger.info(`  Public Signal:        http://${host}:${port}/signal`);
       logger.info(`  Mock Engine Mode:     ${env.USE_MOCK_ENGINE ? 'ENABLED' : 'DISABLED'}`);
       logger.info(`=======================================================`);
       resolve(server);
