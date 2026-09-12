@@ -17,6 +17,7 @@ from engine.optimizer.models import (
     RunwayQuery,
     SignalResponse,
 )
+from engine.optimizer.plans.baseline_strategies import diesel_first, renewable_first
 from engine.optimizer.signals.signal_engine import evaluate_signal
 
 router = APIRouter()
@@ -56,6 +57,50 @@ def ladder(payload: LadderRequest) -> DispatchPlan:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
+@router.post("/compare")
+def compare(payload: OptimizeRequest) -> dict[str, dict[str, float]]:
+    """Compare AI optimal dispatch against diesel-first and renewable-first baseline strategies."""
+    try:
+        ai_plan = dispatch_optimizer(
+            payload.state,
+            payload.demand,
+            payload.forecast,
+            payload.constraints,
+        )
+        diesel_plan = diesel_first(
+            payload.state,
+            payload.demand,
+            payload.forecast,
+            payload.constraints,
+        )
+        renew_plan = renewable_first(
+            payload.state,
+            payload.demand,
+            payload.forecast,
+            payload.constraints,
+        )
+
+        def _extract_metrics(p: DispatchPlan) -> dict[str, float]:
+            served = (p.solar_used + p.wind_used + p.battery_discharge + p.diesel_output) - p.battery_charge
+            renewable_used = p.solar_used + p.wind_used
+            renewable_share = (renewable_used / max(0.001, served)) * 100.0
+            return {
+                "cost_usd": round(float(p.total_cost), 2),
+                "co2_kg": round(float(p.emissions), 2),
+                "diesel_liters": round(float(p.diesel_output * 0.27), 2),
+                "renewable_share_pct": round(min(100.0, max(0.0, float(renewable_share))), 1),
+                "reliability_pct": round(float(p.reliability_score * 100.0), 1),
+            }
+
+        return {
+            "ai_optimal": _extract_metrics(ai_plan),
+            "diesel_first": _extract_metrics(diesel_plan),
+            "renewable_first": _extract_metrics(renew_plan),
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
 @router.get("/runway", response_model=RunwayProjection)
 def runway(params: RunwayQuery = Depends(runway_inputs)) -> RunwayProjection:
     """Return deterministic fuel-runway projection."""
@@ -77,3 +122,4 @@ def signal(params: RunwayQuery = Depends(runway_inputs)) -> SignalResponse:
         params.to_constraints(),
     )
     return evaluate_signal(projection.projected_days_remaining)
+

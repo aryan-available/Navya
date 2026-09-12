@@ -78,6 +78,18 @@ def test_signal_endpoint() -> None:
     assert isinstance(payload["message"], str)
 
 
+def test_compare_endpoint() -> None:
+    response = client.post("/compare", json=_BODY)
+    assert response.status_code == 200
+    payload = response.json()
+    assert "ai_optimal" in payload
+    assert "diesel_first" in payload
+    assert "renewable_first" in payload
+    assert "cost_usd" in payload["ai_optimal"]
+    assert "co2_kg" in payload["ai_optimal"]
+    assert "reliability_pct" in payload["ai_optimal"]
+
+
 def test_docs_available() -> None:
     response = client.get("/docs")
     assert response.status_code == 200
@@ -86,5 +98,7 @@ def test_docs_available() -> None:
     paths = openapi.json()["paths"]
     assert "/optimize" in paths
     assert "/ladder" in paths
+    assert "/compare" in paths
     assert "/runway" in paths
     assert "/signal" in paths
+

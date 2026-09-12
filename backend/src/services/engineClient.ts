@@ -318,7 +318,11 @@ export class EngineClient {
       return this.getMockComparePlans();
     }
     try {
-      const response = await this.client.post<ComparePlansResult>('/compare', payload || {});
+      const fastApiBody = this.toFastApiPayload({
+        current_state: payload?.current_state,
+        forecast: payload?.forecast
+      });
+      const response = await this.client.post<ComparePlansResult>('/compare', fastApiBody);
       return response.data;
     } catch {
       return this.getMockComparePlans();
