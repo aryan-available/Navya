@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  # 1. MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: gridpilot-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - gridpilot-network
+
+  # 2. Node.js + Express API Gateway (Member B)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: gridpilot-backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongodb:27017/gridpilot
+      - JWT_SECRET=super_secret_gridpilot_production_key_2026
+      - ENGINE_BASE_URL=http://engine:8000
+      - USE_MOCK_ENGINE=false
+      - ORCHESTRATOR_TICK_MS=5000
+      - FRONTEND_ORIGIN=*
+    depends_on:
+      - mongodb
+    networks:
+      - gridpilot-network
+
+networks:
+  gridpilot-network:
+    driver: bridge
+
+volumes:
+  mongo_data:
