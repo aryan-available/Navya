@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GridPilot Shared Simulation Contracts",
+  "definitions": {
+    "LoadTier": {
+      "type": "integer",
+      "enum": [1, 2, 3, 4],
+      "description": "1: Critical (clinic, water), 2: Important (school, street), 3: Homes, 4: Flexible (industry, EV)"
+    },
+    "WeatherState": {
+      "type": "object",
+      "properties": {
+        "timestamp": { "type": "string", "format": "date-time" },
+        "ghi_w_m2": { "type": "number" },
+        "wind_speed_m_s": { "type": "number" },
+        "temperature_c": { "type": "number" },
+        "cloud_cover_pct": { "type": "number", "minimum": 0, "maximum": 100 },
+        "source": { "type": "string", "enum": ["live", "synthetic"] }
+      },
+      "required": ["timestamp", "ghi_w_m2", "wind_speed_m_s", "temperature_c", "cloud_cover_pct", "source"]
+    },
+    "BatteryState": {
+      "type": "object",
+      "properties": {
+        "timestamp": { "type": "string", "format": "date-time" },
+        "soc_pct": { "type": "number", "minimum": 0, "maximum": 100 },
+        "capacity_kwh": { "type": "number", "minimum": 0 },
+        "charge_rate_kw": { "type": "number" },
+        "health_pct": { "type": "number", "minimum": 0, "maximum": 100 }
+      },
+      "required": ["timestamp", "soc_pct", "capacity_kwh", "charge_rate_kw"]
+    },
+    "DieselFuelState": {
+      "type": "object",
+      "properties": {
+        "timestamp": { "type": "string", "format": "date-time" },
+        "fuel_remaining_l": { "type": "number", "minimum": 0 },
+        "tank_capacity_l": { "type": "number", "minimum": 0 },
+        "consumption_rate_l_per_kwh": { "type": "number", "minimum": 0 },
+        "generator_on": { "type": "boolean" },
+        "current_load_kw": { "type": "number", "minimum": 0 },
+        "last_refuel_at": { "type": ["string", "null"] },
+        "refuel_history": { "type": "array" }
+      },
+      "required": ["timestamp", "fuel_remaining_l", "tank_capacity_l", "consumption_rate_l_per_kwh", "generator_on"]
+    },
+    "ScenarioEvent": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "enum": ["cloud_cover", "wind_drop", "demand_surge", "battery_failure", "diesel_price_spike"]
+        },
+        "triggered_at": { "type": "string", "format": "date-time" },
+        "magnitude": { "type": "number" },
+        "duration_hours": { "type": "number" },
+        "metadata": { "type": "object" }
+      },
+      "required": ["name", "triggered_at", "magnitude", "duration_hours"]
+    }
+  }
+}
