@@ -53,7 +53,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
       },
       shortfallStage: dispatchPlan.shortfall_stage ?? payload.current_state.shortfall_stage ?? 0,
       reasonCodes: dispatchPlan.reason_codes || [],
-      executedBy: req.user?.email || 'operator'
+      executedBy: req.user?.email || 'user'
     });
 
     // Broadcast optimization update to live UI

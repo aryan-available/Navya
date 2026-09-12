@@ -12,8 +12,7 @@ const router = Router();
 
 const RegisterSchema = z.object({
   email: z.string().email('Valid email is required'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  role: z.enum(['operator', 'admin']).optional().default('operator')
+  password: z.string().min(6, 'Password must be at least 6 characters')
 });
 
 const LoginSchema = z.object({
@@ -23,34 +22,33 @@ const LoginSchema = z.object({
 
 /**
  * POST /auth/register
+ * Register a new user account
  */
 router.post(
   '/register',
   validateBody(RegisterSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { email, password, role } = req.body;
+      const { email, password } = req.body;
+      const normalizedEmail = email.trim().toLowerCase();
 
-      const existingUser = await User.findOne({ email: email.toLowerCase() });
+      const existingUser = await User.findOne({ email: normalizedEmail });
       if (existingUser) {
         throw new ConflictError('A user with this email already exists');
       }
 
       const passwordHash = await hashPassword(password);
       const user = await User.create({
-        email: email.toLowerCase(),
-        passwordHash,
-        role: role || 'operator'
+        email: normalizedEmail,
+        passwordHash
       });
 
-      logger.info(`New user registered: ${user.email} (Role: ${user.role})`);
+      logger.info(`New user registered: ${user.email}`);
 
       res.status(201).json({
         user: {
           id: user._id.toString(),
-          email: user.email,
-          role: user.role,
-          created_at: user.createdAt
+          email: user.email
         }
       });
     } catch (err) {
@@ -61,6 +59,7 @@ router.post(
 
 /**
  * POST /auth/login
+ * Authenticate user and issue JWT token
  */
 router.post(
   '/login',
@@ -68,8 +67,9 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { email, password } = req.body;
+      const normalizedEmail = email.trim().toLowerCase();
 
-      const user = await User.findOne({ email: email.toLowerCase() });
+      const user = await User.findOne({ email: normalizedEmail });
       if (!user) {
         throw new UnauthorizedError('Invalid email or password');
       }
@@ -82,8 +82,7 @@ router.post(
       const token = jwt.sign(
         {
           userId: user._id.toString(),
-          email: user.email,
-          role: user.role
+          email: user.email
         },
         env.JWT_SECRET,
         { expiresIn: env.JWT_EXPIRES_IN as any }
@@ -95,8 +94,7 @@ router.post(
         token,
         user: {
           id: user._id.toString(),
-          email: user.email,
-          role: user.role
+          email: user.email
         }
       });
     } catch (err) {
@@ -107,6 +105,7 @@ router.post(
 
 /**
  * GET /auth/me
+ * Retrieve the current logged-in user (requires JWT)
  */
 router.get('/me', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -118,9 +117,7 @@ router.get('/me', requireAuth, async (req: Request, res: Response, next: NextFun
     res.status(200).json({
       user: {
         id: user._id.toString(),
-        email: user.email,
-        role: user.role,
-        created_at: user.createdAt
+        email: user.email
       }
     });
   } catch (err) {

@@ -220,14 +220,12 @@ export interface ManualOverrideSettings {
 export interface SafeUser {
   id: string;
   email: string;
-  role: string;
   created_at?: string;
 }
 
 export interface AuthJwtPayload {
   userId: string;
   email: string;
-  role: string;
 }
 
 export interface OptimizeRequestPayload {
