@@ -530,11 +530,25 @@ export class EngineClient {
 
   private toFrontendDispatchPlan(raw: any, payload: OptimizeRequestPayload): DispatchPlan {
     const state: any = payload.current_state || {};
+    const demandTotal = Number(state.demand?.total_kw ?? 0);
+    const served = Math.max(0, demandTotal - Number(raw.unserved_tier1 ?? 0) - Number(raw.unserved_tier2 ?? 0) - Number(raw.unserved_tier3 ?? 0) - Number(raw.unserved_tier4 ?? 0));
+    const shortfall = Number(raw.unserved_tier1 ?? 0) + Number(raw.unserved_tier2 ?? 0) + Number(raw.unserved_tier3 ?? 0) + Number(raw.unserved_tier4 ?? 0);
     return {
       plan_id: `plan_${Date.now()}`,
       timestamp: new Date().toISOString(),
       horizon_hours: payload.horizon_hours || 24,
-      dispatches: [],
+      dispatches: [{
+        time: state.timestamp || new Date().toISOString(),
+        solar_kw: Number(raw.solar_used ?? 0),
+        wind_kw: Number(raw.wind_used ?? 0),
+        battery_charge_kw: Number(raw.battery_charge ?? 0),
+        battery_discharge_kw: Number(raw.battery_discharge ?? 0),
+        diesel_kw: Number(raw.diesel_output ?? 0),
+        curtailment_kw: 0,
+        served_load_kw: served,
+        shed_load_kw: shortfall,
+        soc_pct: Number(state.battery?.soc_pct ?? 0),
+      }],
       metrics: {} as any,
       reason_codes: [],
       shortfall_stage: 0,
