@@ -75,10 +75,7 @@ router.post(
       }
       liveStateBroadcaster.emitSignal(scenarioResult.updated_state.signal);
 
-      res.status(200).json({
-        scenario: scenarioRecord,
-        result: scenarioResult
-      });
+      res.status(200).json(scenarioResult);
     } catch (err) {
       next(err);
     }
