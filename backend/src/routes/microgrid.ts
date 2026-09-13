@@ -57,7 +57,12 @@ router.get('/community', async (req: Request, res: Response, next: NextFunction)
       });
     }
 
-    res.status(200).json(community);
+    res.status(200).json({
+      community_id: community.communityId,
+      name: community.name,
+      location: community.location?.region,
+      population: 0
+    });
   } catch (err) {
     next(err);
   }
