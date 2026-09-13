@@ -490,12 +490,17 @@ export class EngineClient {
   private toPythonInputs(payload: OptimizeRequestPayload) {
     const state: any = payload.current_state || {};
     const generation: any = state.generation || {};
+    const battery: any = state.battery || {};
 
     return {
       state: {
         timestamp: state.timestamp || new Date().toISOString(),
         solar_available_kw: Number(generation.solar_kw ?? 0),
         wind_available_kw: Number(generation.wind_kw ?? 0),
+        battery_soc_kwh: Number(battery.stored_kwh ?? 0),
+        battery_capacity_kwh: Number(battery.capacity_kwh ?? 100),
+        battery_max_charge_kw: Number(battery.max_charge_kw ?? 50),
+        battery_max_discharge_kw: Number(battery.max_discharge_kw ?? 60),
       },
     };
   }
