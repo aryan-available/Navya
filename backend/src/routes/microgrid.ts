@@ -82,7 +82,11 @@ router.get('/assets', async (req: Request, res: Response, next: NextFunction) =>
       community = await Community.create({ communityId, name: 'Kipawa Eco-Community Microgrid' });
     }
 
-    res.status(200).json(community.energyAssets);
+    const a = community.energyAssets;
+    res.status(200).json({
+      solar_capacity_kw: a?.solar?.capacityKw ?? 0,
+      wind_capacity_kw: a?.wind?.capacityKw ?? 0
+    });
   } catch (err) {
     next(err);
   }
