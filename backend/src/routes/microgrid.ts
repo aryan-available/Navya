@@ -60,7 +60,8 @@ router.get('/community', async (req: Request, res: Response, next: NextFunction)
     res.status(200).json({
       community_id: community.communityId,
       name: community.name,
-      location: community.location?.region,
+      location: community.location?.region || 'Kijani Ridge',
+      reliability_target_pct: community.reliabilityTargets?.minUptimePct ?? 99.5,
       population: 0
     });
   } catch (err) {
