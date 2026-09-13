@@ -30,8 +30,12 @@ router.post(
     try {
       const payload: ScenarioEventPayload & { community_id: string } = req.body;
 
-      // 1. Delegate event injection to the Python engine
-      const scenarioResult = await engineClient.injectEvent(payload);
+      // 1. Delegate event injection to the Python engine, then refresh and re-optimize.
+      const engineEvent = await engineClient.injectEvent({
+        ...payload,
+        name: payload.scenario_type === 'BATTERY_FAULT' ? 'battery_failure' : payload.scenario_type.toLowerCase()
+      });
+      const scenarioResult = engineEvent;
 
       // 2. Persist scenario in MongoDB
       const scenarioRecord = await Scenario.create({
