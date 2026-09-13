@@ -62,6 +62,7 @@ const healthResponse = (_req: Request, res: Response) => {
 
 app.get('/health', healthResponse);
 app.get('/healthz', healthResponse);
+app.get('/api/healthz', healthResponse);
 
 // 3. Public Routes (No Authentication Required)
 app.use('/auth', authRoutes);
