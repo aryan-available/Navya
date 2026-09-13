@@ -33,7 +33,8 @@ router.post(
       // 1. Delegate event injection to the Python engine, then refresh and re-optimize.
       const engineEvent = await engineClient.injectEvent({
         ...payload,
-        name: payload.scenario_type === 'BATTERY_FAULT' ? 'battery_failure' : payload.scenario_type.toLowerCase()
+        name: payload.scenario_type === 'BATTERY_FAULT' ? 'battery_failure' : payload.scenario_type.toLowerCase(),
+        parameters: payload.parameters
       });
       const scenarioResult = engineEvent;
 
