@@ -435,30 +435,33 @@ export class EngineClient {
     communityId = 'com-offgrid-01',
     horizonHours = 24
   ): Promise<ForecastData> {
-    if (this.isMock) {
-      return this.getMockForecast(
-        horizonHours
-      );
-    }
-
+    if (this.isMock) return this.getMockForecast(horizonHours);
     try {
-      const response =
-        await this.client.get<ForecastData>(
-          '/forecast',
-          {
-            params: {
-              community_id: communityId,
-              horizon_hours: horizonHours
-            }
-          }
-        );
-
-      return response.data;
+      const response = await this.client.get<any>('/forecast', {
+        params: { community_id: communityId, horizon_hours: horizonHours },
+      });
+      const raw = response.data;
+      const solar = raw.solar?.points || [];
+      const wind = raw.wind?.points || [];
+      const demand = raw.demand?.points || [];
+      const length = Math.min(solar.length, wind.length, demand.length);
+      const hourly_forecast = Array.from({ length }, (_, i) => ({
+        time: solar[i]?.timestamp || wind[i]?.timestamp || demand[i]?.timestamp || new Date().toISOString(),
+        predicted_solar_kw: Number(solar[i]?.output_kw ?? 0),
+        predicted_wind_kw: Number(wind[i]?.output_kw ?? 0),
+        total_demand_kw: Number(demand[i]?.total_kw ?? 0),
+        hour_offset: i,
+        irradiance_w_m2: Number(solar[i]?.ghi_w_m2 ?? 0),
+        wind_speed_m_s: Number(wind[i]?.wind_speed_m_s ?? 0),
+        temp_c: 25,
+        tier1_critical_kw: Number(demand[i]?.by_tier?.[1] ?? 0),
+        tier2_important_kw: Number(demand[i]?.by_tier?.[2] ?? 0),
+        tier3_standard_kw: Number(demand[i]?.by_tier?.[3] ?? 0),
+        tier4_flexible_kw: Number(demand[i]?.by_tier?.[4] ?? 0),
+      }));
+      return { horizon_hours: Number(raw.horizon_hours ?? horizonHours), hourly_forecast } as ForecastData;
     } catch (err) {
-      return this.handleError(
-        err,
-        'getForecast'
-      );
+      return this.handleError(err, 'getForecast');
     }
   }
 
