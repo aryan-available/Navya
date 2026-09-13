@@ -112,7 +112,12 @@ function Dashboard() {
   const optimize = useOptimize();
   const state: any = stateQuery.data;
   const [plan, setPlan] = useState<any>();
-  const runOptimize = () => optimize.mutate({ data: { horizon_hours: 24, trigger_reason: 'operator_requested' } }, { onSuccess: setPlan });
+  const runOptimize = () => optimize.mutate({ data: { horizon_hours: 24, trigger_reason: 'operator_requested' } }, {
+    onSuccess: (response: any) => {
+      const nextPlan = response?.dispatch_plan ?? response;
+      setPlan(nextPlan);
+    }
+  });
   if (stateQuery.isLoading) return <div className="space-y-5"><PageHeading kicker="Control center" title="Live operations" description="Loading telemetry from the community microgrid." /><div className="grid gap-5 md:grid-cols-3"><Skeleton className="h-24" /><Skeleton className="h-24" /><Skeleton className="h-24" /></div><Skeleton className="h-[390px]" /></div>;
   if (stateQuery.isError) return <><PageHeading kicker="Control center" title="Live operations" description="Telemetry is temporarily unavailable." /><ErrorState error={stateQuery.error} retry={() => stateQuery.refetch()} /></>;
   return <div className="animate-rise"><PageHeading kicker="Control center / live" title="Keep the lights on." description={`${state?.name ?? 'Kijani Ridge'} is operating under closed-loop dispatch. The next decision is visible before it becomes urgent.`} action={<button onClick={runOptimize} disabled={optimize.isPending} className="flex items-center gap-2 rounded-sm bg-[#174b50] px-4 py-3 text-xs font-bold text-[#f0ebdd] shadow-sm transition-transform hover:-translate-y-0.5 disabled:opacity-60" data-testid="button-optimize"><Play size={14} /> {optimize.isPending ? 'Calculating plan' : 'Run optimization'}</button>} />
