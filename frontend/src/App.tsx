@@ -116,6 +116,9 @@ function Dashboard() {
     onSuccess: (response: any) => {
       const nextPlan = response?.dispatch_plan ?? response;
       setPlan(nextPlan);
+      queryClient.invalidateQueries({ queryKey: getGetMicrogridStateQueryKey() });
+      queryClient.invalidateQueries({ queryKey: getGetLadderQueryKey() });
+      queryClient.invalidateQueries({ queryKey: getGetRunwayQueryKey() });
     }
   });
   if (stateQuery.isLoading) return <div className="space-y-5"><PageHeading kicker="Control center" title="Live operations" description="Loading telemetry from the community microgrid." /><div className="grid gap-5 md:grid-cols-3"><Skeleton className="h-24" /><Skeleton className="h-24" /><Skeleton className="h-24" /></div><Skeleton className="h-[390px]" /></div>;
