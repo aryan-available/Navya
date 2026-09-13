@@ -465,28 +465,18 @@ export class EngineClient {
     }
   }
 
-  async injectEvent(
-    payload: ScenarioEventPayload
-  ): Promise<ScenarioResult> {
-    if (this.isMock) {
-      return this.getMockScenarioResult(
-        payload
-      );
-    }
-
+  async injectEvent(payload: ScenarioEventPayload): Promise<any> {
+    if (this.isMock) return this.getMockScenarioResult(payload);
     try {
-      const response =
-        await this.client.post<ScenarioResult>(
-          '/events',
-          payload
-        );
-
+      const response = await this.client.post<any>('/events', {
+        name: payload.name,
+        severity: Number(payload.parameters?.severity_pct ?? payload.parameters?.severity ?? 0) / 100,
+        duration_hours: payload.duration_hours ?? 6,
+        tier: payload.parameters?.tier,
+      });
       return response.data;
     } catch (err) {
-      return this.handleError(
-        err,
-        'injectEvent'
-      );
+      return this.handleError(err, 'injectEvent');
     }
   }
 
