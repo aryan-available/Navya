@@ -85,7 +85,9 @@ router.get('/assets', async (req: Request, res: Response, next: NextFunction) =>
     const a = community.energyAssets;
     res.status(200).json({
       solar_capacity_kw: a?.solar?.capacityKw ?? 0,
-      wind_capacity_kw: a?.wind?.capacityKw ?? 0
+      wind_capacity_kw: a?.wind?.capacityKw ?? 0,
+      battery_capacity_kwh: a?.battery?.capacityKwh ?? 0,
+      diesel_capacity_kw: a?.diesel?.ratedKw ?? 0
     });
   } catch (err) {
     next(err);
