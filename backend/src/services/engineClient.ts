@@ -571,32 +571,32 @@ export class EngineClient {
     }
   }
 
-  async evaluateLadder(
-    payload: {
-      state: CommunityState;
-      demand: CommunityState['demand'];
-      target_stage?: number;
-    }
-  ): Promise<LadderResponse> {
-    if (this.isMock) {
-      return this.getMockLadderResponse(
-        payload.target_stage ?? 1
-      );
-    }
-
+  async evaluateLadder(payload: { state: CommunityState; demand: CommunityState['demand']; target_stage?: number }): Promise<LadderResponse> {
+    if (this.isMock) return this.getMockLadderResponse(payload.target_stage ?? 1);
     try {
-      const response =
-        await this.client.post<LadderResponse>(
-          '/ladder',
-          payload
-        );
-
-      return response.data;
+      const state = payload.state;
+      const request: OptimizeRequestPayload = {
+        current_state: state,
+        forecast: await this.getForecast(state.community_id, 24),
+        horizon_hours: 24,
+        trigger_reason: 'ladder_evaluation',
+      };
+      const response = await this.client.post<any>('/ladder', {
+        ...this.toPythonInputs(request),
+        stage: payload.target_stage ?? state.shortfall_stage ?? 0,
+      });
+      const dispatch = this.toFrontendDispatchPlan(response.data, request);
+      const stage = payload.target_stage ?? state.shortfall_stage ?? 0;
+      return {
+        active_stage: stage,
+        stage_name: ['Normal operation', 'Early reserve', 'Deferred loads', 'Partial shedding', 'Emergency shedding'][stage] || 'Normal operation',
+        actions_taken: stage === 0 ? [] : [`Shortfall ladder stage ${stage} evaluated against current supply.`],
+        loads_held_or_shed: [],
+        dispatch,
+        reason_codes: dispatch.reason_codes,
+      };
     } catch (err) {
-      return this.handleError(
-        err,
-        'evaluateLadder'
-      );
+      return this.handleError(err, 'evaluateLadder');
     }
   }
 
