@@ -491,6 +491,7 @@ export class EngineClient {
     const state: any = payload.current_state || {};
     const generation: any = state.generation || {};
     const battery: any = state.battery || {};
+    const diesel: any = state.diesel || {};
 
     return {
       state: {
@@ -501,6 +502,9 @@ export class EngineClient {
         battery_capacity_kwh: Number(battery.capacity_kwh ?? 100),
         battery_max_charge_kw: Number(battery.max_charge_kw ?? 50),
         battery_max_discharge_kw: Number(battery.max_discharge_kw ?? 60),
+        diesel_max_kw: Number(diesel.rated_kw ?? 100),
+        diesel_fuel_liters: Number(diesel.fuel_remaining_liters ?? 0),
+        diesel_cost_per_kwh: Number((diesel.fuel_price_per_liter ?? 1.45) * (diesel.fuel_consumption_rate_l_per_kwh ?? 0.27)),
       },
     };
   }
