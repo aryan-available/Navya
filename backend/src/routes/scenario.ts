@@ -102,7 +102,8 @@ router.get('/list', async (req: Request, res: Response, next: NextFunction) => {
  */
 router.post('/compare', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { current_state, forecast } = req.body;
+    const current_state = req.body?.current_state;
+    const forecast = req.body?.forecast;
     const comparison = await engineClient.comparePlans({ current_state, forecast });
     res.status(200).json(comparison);
   } catch (err) {
