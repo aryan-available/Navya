@@ -39,7 +39,15 @@ router.post(
       const updatedState = await engineClient.getLiveState(payload.community_id);
       const forecast = await engineClient.getForecast(payload.community_id, 24);
       const reoptimized = await engineClient.optimize({ current_state: updatedState, forecast, horizon_hours: 24, trigger_reason: `scenario:${payload.scenario_type}` });
-      const scenarioResult = { engineEvent, updatedState, reoptimized };
+      const scenarioResult: any = {
+        status: 'APPLIED',
+        scenario_id: engineEvent?.event?.name ? `scen_${Date.now()}` : `scen_${Date.now()}`,
+        message: `Scenario applied: ${payload.name}`,
+        updated_state: updatedState,
+        reoptimized_dispatch: reoptimized,
+        cost_delta_usd: reoptimized.metrics.total_cost_usd,
+        co2_delta_kg: reoptimized.metrics.total_co2_kg
+      };
 
       // 2. Persist scenario in MongoDB
       const scenarioRecord = await Scenario.create({
