@@ -487,6 +487,15 @@ export class EngineClient {
     }
   }
 
+  private toPythonInputs(payload: OptimizeRequestPayload) {
+    const state: any = payload.current_state || {};
+    return {
+      state: {
+        timestamp: state.timestamp || new Date().toISOString(),
+      },
+    };
+  }
+
   // ==========================================
   // 2. Optimization Endpoints
   // ==========================================
