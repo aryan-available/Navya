@@ -489,9 +489,13 @@ export class EngineClient {
 
   private toPythonInputs(payload: OptimizeRequestPayload) {
     const state: any = payload.current_state || {};
+    const generation: any = state.generation || {};
+
     return {
       state: {
         timestamp: state.timestamp || new Date().toISOString(),
+        solar_available_kw: Number(generation.solar_kw ?? 0),
+        wind_available_kw: Number(generation.wind_kw ?? 0),
       },
     };
   }
