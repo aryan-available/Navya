@@ -68,6 +68,7 @@ app.get('/api/healthz', healthResponse);
 app.use('/auth', authRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/signal', signalRoutes);
+app.use('/api/signal', signalRoutes);
 
 // 4. Protected Microgrid API Routes
 app.use('/api/microgrid', microgridRoutes);
