@@ -619,30 +619,14 @@ export class EngineClient {
     }
   }
 
-  async getSignal(
-    communityId = 'com-offgrid-01'
-  ): Promise<SignalState> {
-    if (this.isMock) {
-      return this.currentMockState.signal;
-    }
-
+  async getSignal(communityId = 'com-offgrid-01'): Promise<SignalState> {
+    if (this.isMock) return this.currentMockState.signal;
     try {
-      const response =
-        await this.client.get<SignalState>(
-          '/signal',
-          {
-            params: {
-              community_id: communityId
-            }
-          }
-        );
-
-      return response.data;
+      const runway = await this.getRunway(communityId);
+      const color = runway.status === 'CRITICAL' ? 'RED' : runway.status === 'WARNING' ? 'YELLOW' : 'GREEN';
+      return { color, message: color === 'GREEN' ? 'Microgrid operating within available generation.' : 'Microgrid supply below current demand. Monitoring shortfall response.', updated_at: new Date().toISOString() };
     } catch (err) {
-      return this.handleError(
-        err,
-        'getSignal'
-      );
+      return this.handleError(err, 'getSignal');
     }
   }
 
