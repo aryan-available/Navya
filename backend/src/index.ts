@@ -66,6 +66,7 @@ app.get('/api/healthz', healthResponse);
 
 // 3. Public Routes (No Authentication Required)
 app.use('/auth', authRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/signal', signalRoutes);
 
 // 4. Protected Microgrid API Routes
