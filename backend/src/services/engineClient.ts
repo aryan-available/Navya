@@ -600,32 +600,22 @@ export class EngineClient {
     }
   }
 
-  async getRunway(
-    communityId = 'com-offgrid-01'
-  ): Promise<RunwayForecast> {
-    if (this.isMock) {
-      return this.getMockRunwayForecast(
-        communityId
-      );
-    }
-
+  async getRunway(communityId = 'com-offgrid-01'): Promise<RunwayForecast> {
+    if (this.isMock) return this.getMockRunwayForecast(communityId);
     try {
-      const response =
-        await this.client.get<RunwayForecast>(
-          '/runway',
-          {
-            params: {
-              community_id: communityId
-            }
-          }
-        );
-
-      return response.data;
+      const state = await this.getLiveState(communityId);
+      const forecast = await this.getForecast(communityId, 24);
+      const p = await this.client.get<any>('/runway', { params: this.toPythonInputs({ current_state: state, forecast, horizon_hours: 24 }).state });
+      const days = Number(p.data.projected_days_remaining ?? 0);
+      return {
+        generated_at: new Date().toISOString(),
+        community_id: communityId,
+        days_of_diesel_remaining: days,
+        daily_projections: [{ day_offset: 0, projected_diesel_liters_burned: Number(p.data.daily_diesel_consumption ?? 0), remaining_liters: Number(p.data.remaining_liters ?? 0), burn_rate_l_day: Number(p.data.daily_diesel_consumption ?? 0) }],
+        status: days < 1 ? 'CRITICAL' : days < 3 ? 'WARNING' : 'SUFFICIENT',
+      };
     } catch (err) {
-      return this.handleError(
-        err,
-        'getRunway'
-      );
+      return this.handleError(err, 'getRunway');
     }
   }
 
