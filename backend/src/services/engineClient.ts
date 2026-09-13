@@ -489,9 +489,11 @@ export class EngineClient {
 
   private toPythonInputs(payload: OptimizeRequestPayload) {
     const state: any = payload.current_state || {};
+    const demand: any = state.demand || {};
     const generation: any = state.generation || {};
     const battery: any = state.battery || {};
     const diesel: any = state.diesel || {};
+    const first = payload.forecast?.hourly_forecast?.[0] as any;
 
     return {
       state: {
@@ -505,6 +507,23 @@ export class EngineClient {
         diesel_max_kw: Number(diesel.rated_kw ?? 100),
         diesel_fuel_liters: Number(diesel.fuel_remaining_liters ?? 0),
         diesel_cost_per_kwh: Number((diesel.fuel_price_per_liter ?? 1.45) * (diesel.fuel_consumption_rate_l_per_kwh ?? 0.27)),
+      },
+      demand: {
+        tier1_kw: Number(demand.tier_breakdown?.tier1_critical_kw ?? 0),
+        tier2_kw: Number(demand.tier_breakdown?.tier2_important_kw ?? 0),
+        tier3_kw: Number(demand.tier_breakdown?.tier3_standard_kw ?? 0),
+        tier4_kw: Number(demand.tier_breakdown?.tier4_flexible_kw ?? 0),
+      },
+      forecast: {
+        solar_next_hour: Number(first?.predicted_solar_kw ?? generation.solar_kw ?? 0),
+        wind_next_hour: Number(first?.predicted_wind_kw ?? generation.wind_kw ?? 0),
+        demand_growth_factor: 1.0,
+      },
+      constraints: {
+        battery_min_soc: Number(battery.min_soc_pct ?? 20) / 100,
+        battery_max_soc: 0.95,
+        co2_cost: 0.08,
+        degradation_cost: 0.04,
       },
     };
   }
