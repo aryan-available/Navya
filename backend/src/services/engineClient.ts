@@ -559,8 +559,8 @@ export class EngineClient {
         diesel_liters_used: dieselLiters,
         reliability_score_pct: reliability,
       },
-      reason_codes: [],
-      shortfall_stage: 0,
+      reason_codes: Array.isArray(raw.reason_codes) ? raw.reason_codes : [],
+      shortfall_stage: shortfall > 0 ? 3 : 0,
     };
   }
 
