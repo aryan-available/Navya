@@ -528,6 +528,19 @@ export class EngineClient {
     };
   }
 
+  private toFrontendDispatchPlan(raw: any, payload: OptimizeRequestPayload): DispatchPlan {
+    const state: any = payload.current_state || {};
+    return {
+      plan_id: `plan_${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      horizon_hours: payload.horizon_hours || 24,
+      dispatches: [],
+      metrics: {} as any,
+      reason_codes: [],
+      shortfall_stage: 0,
+    };
+  }
+
   // ==========================================
   // 2. Optimization Endpoints
   // ==========================================
