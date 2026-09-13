@@ -561,40 +561,16 @@ export class EngineClient {
   // 2. Optimization Endpoints
   // ==========================================
 
-  async optimize(
-    payload: OptimizeRequestPayload
-  ): Promise<DispatchPlan> {
-    if (this.isMock) {
-      return this.getMockDispatchPlan(
-        payload
-      );
-    }
-
+  async optimize(payload: OptimizeRequestPayload): Promise<DispatchPlan> {
+    if (this.isMock) return this.getMockDispatchPlan(payload);
     try {
-      const response =
-        await this.client.post<DispatchPlan>(
-          '/optimize',
-          payload
-        );
-
-      return response.data;
+      const response = await this.client.post<any>('/optimize', this.toPythonInputs(payload));
+      return this.toFrontendDispatchPlan(response.data, payload);
     } catch (err) {
-      return this.handleError(
-        err,
-        'optimize'
-      );
+      return this.handleError(err, 'optimize');
     }
   }
 
-  /**
-   * POST /ladder - Evaluates 5-Stage Shortfall Response Ladder
-   *
-   * Python expects:
-   *   state
-   *   demand
-   *
-   * target_stage is retained for the backend/mock flow.
-   */
   async evaluateLadder(
     payload: {
       state: CommunityState;
