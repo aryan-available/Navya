@@ -480,6 +480,10 @@ export class EngineClient {
     }
   }
 
+  // ==========================================
+  // 2. Optimization Endpoints
+  // ==========================================
+
   private toPythonInputs(payload: OptimizeRequestPayload) {
     const state: any = payload.current_state || {};
     const demand: any = state.demand || {};
@@ -556,10 +560,6 @@ export class EngineClient {
       shortfall_stage: shortfall > 0 ? 3 : 0,
     };
   }
-
-  // ==========================================
-  // 2. Optimization Endpoints
-  // ==========================================
 
   async optimize(payload: OptimizeRequestPayload): Promise<DispatchPlan> {
     if (this.isMock) return this.getMockDispatchPlan(payload);
