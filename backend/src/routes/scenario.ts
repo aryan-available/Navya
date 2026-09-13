@@ -37,7 +37,8 @@ router.post(
         parameters: payload.parameters
       });
       const updatedState = await engineClient.getLiveState(payload.community_id);
-      const scenarioResult = { engineEvent, updatedState };
+      const forecast = await engineClient.getForecast(payload.community_id, 24);
+      const scenarioResult = { engineEvent, updatedState, forecast };
 
       // 2. Persist scenario in MongoDB
       const scenarioRecord = await Scenario.create({
