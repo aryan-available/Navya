@@ -532,6 +532,7 @@ export class EngineClient {
     const state: any = payload.current_state || {};
     const demandTotal = Number(state.demand?.total_kw ?? 0);
     const served = Math.max(0, demandTotal - Number(raw.unserved_tier1 ?? 0) - Number(raw.unserved_tier2 ?? 0) - Number(raw.unserved_tier3 ?? 0) - Number(raw.unserved_tier4 ?? 0));
+    const renewable = Number(raw.solar_used ?? 0) + Number(raw.wind_used ?? 0);
     const shortfall = Number(raw.unserved_tier1 ?? 0) + Number(raw.unserved_tier2 ?? 0) + Number(raw.unserved_tier3 ?? 0) + Number(raw.unserved_tier4 ?? 0);
     return {
       plan_id: `plan_${Date.now()}`,
@@ -549,7 +550,13 @@ export class EngineClient {
         shed_load_kw: shortfall,
         soc_pct: Number(state.battery?.soc_pct ?? 0),
       }],
-      metrics: {} as any,
+      metrics: {
+        total_cost_usd: Number(raw.total_cost ?? 0),
+        total_co2_kg: Number(raw.emissions ?? 0),
+        renewable_share_pct: served > 0 ? Math.min(100, (renewable / served) * 100) : 100,
+        diesel_liters_used: 0,
+        reliability_score_pct: 100,
+      },
       reason_codes: [],
       shortfall_stage: 0,
     };
