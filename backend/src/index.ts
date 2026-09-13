@@ -42,7 +42,7 @@ app.use(express.json({ limit: '5mb' }));
 
 // Request logging middleware
 app.use((req: Request, _res: Response, next: NextFunction) => {
-  if (!['/health', '/healthz', '/signal'].includes(req.originalUrl)) {
+  if (!['/health', '/healthz', '/api/healthz', '/signal', '/api/signal'].includes(req.originalUrl)) {
     logger.debug(`${req.method} ${req.originalUrl}`);
   }
   next();
