@@ -36,7 +36,8 @@ router.post(
         name: payload.scenario_type === 'BATTERY_FAULT' ? 'battery_failure' : payload.scenario_type.toLowerCase(),
         parameters: payload.parameters
       });
-      const scenarioResult = engineEvent;
+      const updatedState = await engineClient.getLiveState(payload.community_id);
+      const scenarioResult = { engineEvent, updatedState };
 
       // 2. Persist scenario in MongoDB
       const scenarioRecord = await Scenario.create({
